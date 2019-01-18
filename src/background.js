@@ -26,7 +26,15 @@ async function init() {
     },
     weightedVariations: [
       {
-        name: "",
+        name: "cohort1",
+        weight: 1,
+      },
+      {
+        name: "cohort2",
+        weight: 1,
+      },
+      {
+        name: "cohort3",
         weight: 1,
       },
     ],

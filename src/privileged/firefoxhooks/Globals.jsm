@@ -16,6 +16,8 @@ ChromeUtils.defineModuleGetter(this, "AddonManager",
                                "resource://gre/modules/AddonManager.jsm");
 ChromeUtils.defineModuleGetter(this, "AppConstants",
                                "resource://gre/modules/AppConstants.jsm");
+ChromeUtils.defineModuleGetter(this, "Preferences",
+                               "resource://gre/modules/Preferences.jsm");
 
 Services.scriptloader.loadSubScript(
   gExtension.getURL("privileged/firefoxhooks/FirefoxHooks.jsm"), GLOBAL);

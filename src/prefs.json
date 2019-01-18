@@ -1,0 +1,35 @@
+{
+  "cohort1": {
+    "setValues": {
+      "pref1": "string1",
+      "pref2": true,
+      "pref3": 99
+    },
+    "resetDefaults": ["pref1"],
+    "resetValues": {
+      "pref3": 100
+    }
+  },
+  "cohort2": {
+    "setValues": {
+      "pref1": "string2",
+      "pref2": false,
+      "pref3": 98
+    },
+    "resetDefaults": ["pref2"],
+    "resetValues": {
+      "pref3": 100
+    }
+  },
+  "cohort3": {
+    "setValues": {
+      "pref1": "string3",
+      "pref2": true,
+      "pref3": 97
+    },
+    "resetDefaults": ["pref1"],
+    "resetValues": {
+      "pref3": 100
+    }
+  }
+}
