@@ -1,6 +1,6 @@
 {
-  "name": "",
-  "description": "",
+  "name": "Multipreffer",
+  "description": "Flippa lotta prefs",
   "version": "1.0.0",
   "author": "Mozilla",
   "bugs": {
@@ -31,7 +31,7 @@
   "private": true,
   "repository": {
     "type": "git",
-    "url": ""
+    "url": "https://github.com/nhnt11/multipreffer"
   },
   "scripts": {
     "build": "web-ext build",

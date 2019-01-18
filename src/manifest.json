@@ -1,15 +1,15 @@
 {
   "manifest_version": 2,
-  "name": "CHANGE ME",
+  "name": "Multipreffer",
   "version": "1.0",
-  "description": "CHANGE ME",
+  "description": "Flippa lotta prefs",
   "background": {
     "scripts": ["background.js"]
   },
   "applications": {
     "gecko": {
-      "id": "CHANGE_ME@shield.mozilla.org",
-      "strict_min_version": "61.0"
+      "id": "multipreffer@shield.mozilla.org",
+      "strict_min_version": "64.0"
     }
   },
 
