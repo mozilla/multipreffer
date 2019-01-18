@@ -31,10 +31,27 @@ this.Experiment = {
     try {
       let res = await fetch(gExtension.getURL("prefs.json"));
       let prefs = await res.json();
-      // TODO: Don't mess with prefs that the user modified while we
-      // weren't looking.
-      Preferences.reset(prefs[this.studyInfo.variation.name].resetDefaults);
-      Preferences.set(prefs[this.studyInfo.variation.name].resetValues);
+      let setValues = prefs[this.studyInfo.variation.name].setValues;
+
+      // Handle the prefs that need to be reset to default.
+      let resetDefaults = [];
+      for (let pref of prefs[this.studyInfo.variation.name].resetDefaults) {
+        if (Preferences.get(pref) === setValues[pref]) {
+          // Pref value hasn't changed from what we set. Include it.
+          resetDefaults.push(pref);
+        }
+      }
+      Preferences.reset(resetDefaults);
+
+      // Handle the prefs that need to be set to a specified value.
+      let resetValues = prefs[this.studyInfo.variation.name].resetValues;
+      for (let [name, value] of Object.entries(setValues)) {
+        if (Preferences.get(name) !== value) {
+          // Pref was modified. Make sure it's not in the resetValues list.
+          delete resetValues[name];
+        }
+      }
+      Preferences.set(resetValues);
     } catch (e) {
       Cu.reportError(e);
     }
