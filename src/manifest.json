@@ -1,0 +1,36 @@
+{
+  "manifest_version": 2,
+  "name": "CHANGE ME",
+  "version": "1.0",
+  "description": "CHANGE ME",
+  "background": {
+    "scripts": ["background.js"]
+  },
+  "applications": {
+    "gecko": {
+      "id": "CHANGE_ME@shield.mozilla.org",
+      "strict_min_version": "61.0"
+    }
+  },
+
+  "permissions": [],
+
+  "experiment_apis": {
+    "study": {
+      "schema": "./privileged/study/schema.json",
+      "parent": {
+        "scopes": ["addon_parent"],
+        "script": "./privileged/study/api.js",
+        "paths": [["study"]]
+      }
+    },
+    "firefoxhooks": {
+      "schema": "./privileged/firefoxhooks/schema.json",
+      "parent": {
+        "scopes": ["addon_parent"],
+        "script": "./privileged/firefoxhooks/api.js",
+        "paths": [["firefoxhooks"]]
+      }
+    }
+  }
+}

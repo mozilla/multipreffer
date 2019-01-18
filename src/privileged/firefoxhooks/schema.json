@@ -1,0 +1,32 @@
+[
+  {
+    "namespace": "firefoxhooks",
+    "functions": [
+      {
+        "name": "studyReady",
+        "type": "function",
+        "async": true,
+        "parameters": [
+          {
+            "type": "object",
+            "name": "studyInfo",
+            "additionalProperties": true
+          }
+        ]
+      }
+    ],
+    "events": [
+      {
+        "name": "onEvent",
+        "type": "function",
+        "parameters": [
+          {
+            "type": "object",
+            "name": "payload",
+            "additionalProperties": true
+          }
+        ]
+      }
+    ]
+  }
+]
