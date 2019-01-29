@@ -15,7 +15,10 @@
     "eslint-plugin-json": "^1.2.0",
     "eslint-plugin-mozilla": "^0.14.0",
     "eslint-plugin-no-unsanitized": "^3.0.2",
+    "geckodriver": "^1.12.2",
+    "mocha": "^5.2.0",
     "npm-run-all": "^4.1.1",
+    "selenium-webdriver": "^3.5.0",
     "web-ext": "^2.7.0"
   },
   "engines": {
@@ -45,7 +48,7 @@
     "prewatch": "npm run bundle-utils",
     "sign": "echo 'TBD, see: https://bugzilla.mozilla.org/show_bug.cgi?id=1407757'",
     "start": "web-ext run --no-reload",
-    "test": "echo 'Error: no test specified' && exit 0",
+    "test": "ADDON_ZIP=./dist/multipreffer-1.0.0.zip mocha test/functional/ --bail",
     "watch": "web-ext run"
   }
 }
