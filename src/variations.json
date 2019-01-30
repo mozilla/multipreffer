@@ -1,0 +1,47 @@
+{
+  "Control": {
+    "weight": 1,
+    "prefs": {
+      "setValues": {
+        "pref1": "string1",
+        "pref2": true,
+        "pref3": 99
+      },
+      "resetDefaults": ["pref1"],
+      "resetValues": {
+        "pref3": 100
+      }
+    }
+  },
+
+  "Cohort1": {
+    "weight": 1,
+    "prefs": {
+      "setValues": {
+        "pref1": "string2",
+        "pref2": false,
+        "pref3": 999
+      },
+      "resetDefaults": ["pref1"],
+      "resetValues": {
+        "pref3": 1000
+      }
+    }
+  },
+
+  "Cohort2": {
+    "weight": 1,
+    "prefs": {
+      "setValues": {
+        "pref1": "string3",
+        "pref2": true,
+        "pref3": -100
+      },
+      "resetDefaults": ["pref3"],
+      "resetValues": {
+        "pref1": "string99",
+        "pref2": false
+      }
+    }
+  }
+}

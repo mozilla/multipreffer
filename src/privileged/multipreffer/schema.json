@@ -1,6 +1,6 @@
 [
   {
-    "namespace": "firefoxhooks",
+    "namespace": "multipreffer",
     "functions": [
       {
         "name": "studyReady",
@@ -10,19 +10,6 @@
           {
             "type": "object",
             "name": "studyInfo",
-            "additionalProperties": true
-          }
-        ]
-      }
-    ],
-    "events": [
-      {
-        "name": "onEvent",
-        "type": "function",
-        "parameters": [
-          {
-            "type": "object",
-            "name": "payload",
             "additionalProperties": true
           }
         ]

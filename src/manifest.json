@@ -24,12 +24,12 @@
         "paths": [["study"]]
       }
     },
-    "firefoxhooks": {
-      "schema": "./privileged/firefoxhooks/schema.json",
+    "multipreffer": {
+      "schema": "./privileged/multipreffer/schema.json",
       "parent": {
         "scopes": ["addon_parent"],
-        "script": "./privileged/firefoxhooks/api.js",
-        "paths": [["firefoxhooks"]]
+        "script": "./privileged/multipreffer/api.js",
+        "paths": [["multipreffer"]]
       }
     }
   }
