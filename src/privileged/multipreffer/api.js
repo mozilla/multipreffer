@@ -38,10 +38,11 @@ this.FirefoxHooks = {
     const variationName = Preferences.get("extensions.multipreffer.test.variationName", this.studyInfo.variation.name);
     const prefs = this.variations[variationName].prefs;
     try {
-      for (const name of Object.keys(prefs)) {
+      for (const name of Object.keys(prefs.setValues)) {
         if (Preferences.isSet(name)) {
           // One of the prefs has a user-set value, ABORT!!!
           // TODO: End the study/uninstall the addon?
+          this.ABORT = true;
           return;
         }
       }
@@ -57,7 +58,6 @@ this.FirefoxHooks = {
     try {
       const res = await fetch(gExtension.getURL("variations.json"));
       this.variations = await res.json();
-      console.log(JSON.stringify(this.variations));
     } catch (e) {
       console.error("Failed to load variations!");
       return;
@@ -70,6 +70,10 @@ this.FirefoxHooks = {
 
   async cleanup() {
     // Called when the add-on is being removed for any reason.
+    if (this.ABORT) {
+      return;
+    }
+
     try {
       const variationName = Preferences.get("extensions.multipreffer.test.variationName", this.studyInfo.variation.name);
       const prefs = this.variations[variationName].prefs;
