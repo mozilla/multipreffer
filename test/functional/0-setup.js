@@ -21,7 +21,7 @@ async function checkPrefs(driver, allPrefs, prefs) {
 
 describe("setup and teardown", function() {
   // This gives Firefox time to start, and us a bit longer during some of the tests.
-  this.timeout(150000);
+  this.timeout(15000);
 
   let driver;
 
