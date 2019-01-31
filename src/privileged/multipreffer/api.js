@@ -63,9 +63,7 @@ this.FirefoxHooks = {
       return;
     }
 
-    if (studyInfo.isFirstRun) {
-      this.setup();
-    }
+    await this.setup();
   },
 
   async cleanup() {
