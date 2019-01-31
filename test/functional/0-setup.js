@@ -56,13 +56,55 @@ describe("setup and teardown", function() {
 
         it("has the correct prefs after uninstall", async () => {
           await utils.setupWebdriver.uninstallAddon(driver, addonId);
-          const prefsToCheck = prefs.setValues;
+          const prefsToCheck = Object.assign({}, prefs.setValues);
           for (const pref of prefs.resetDefaults) {
             prefsToCheck[pref] = undefined;
           }
           for (const pref in prefs.resetValues) {
             prefsToCheck[pref] = prefs.resetValues[pref];
           }
+          await checkPrefs(driver, allPrefs, prefsToCheck);
+          for (const pref in prefsToCheck) {
+            await utils.clearPreference(driver, pref);
+          }
+        });
+
+        after(async () => {
+          await utils.clearPreference(driver, "extensions.multipreffer.test.variationName");
+        });
+      });
+    }
+  });
+
+  describe("Check whether prefs user-modified after install are left user-modified after cleanup", function() {
+    const SETUP_DELAY = 500;
+    let addonId;
+
+    for (const variation in variations) {
+      const prefs = variations[variation].prefs;
+      const allPrefs = Object.keys(prefs.setValues);
+      describe(`sets the correct prefs for variation ${variation}`, () => {
+        before(async () => {
+          await utils.setPreference(driver, "extensions.multipreffer.test.variationName", variation);
+          addonId = await utils.setupWebdriver.installAddon(driver);
+          await driver.sleep(SETUP_DELAY);
+        });
+
+        it("has the correct prefs after install", async () => {
+          await checkPrefs(driver, allPrefs, prefs.setValues);
+        });
+
+        it("has the correct prefs after uninstall", async () => {
+          await utils.setPreference(driver, allPrefs[0], "TEST VALUE!!");
+          await utils.setupWebdriver.uninstallAddon(driver, addonId);
+          const prefsToCheck = Object.assign({}, prefs.setValues);
+          for (const pref of prefs.resetDefaults) {
+            prefsToCheck[pref] = undefined;
+          }
+          for (const pref in prefs.resetValues) {
+            prefsToCheck[pref] = prefs.resetValues[pref];
+          }
+          prefsToCheck[allPrefs[0]] = "TEST VALUE!!";
           await checkPrefs(driver, allPrefs, prefsToCheck);
           for (const pref in prefsToCheck) {
             await utils.clearPreference(driver, pref);
