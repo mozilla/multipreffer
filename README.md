@@ -4,19 +4,27 @@ Allows defining a set of prefs per SHIELD cohort, and sets them at install and c
 User-modifications to prefs are respected. If any of the prefs to be touched have user-set values, the entire set is ignored.
 At uninstall, any individual prefs whose values have been user-changed since install are left alone.
 
-For technical details, please see https://github.com/nhnt11/WEE-Shield-Study-Template/blob/master/README.md
+The prefs to be set should be defined in src/variations.json, following this scheme:
 
-The prefs to be set should be defined in src/prefs.json, following this scheme:
-
+```
 {
-  "cohort name": {
-    "pref1": "value",
-    "pref2": "value"
+  "cohort 1": { // Name of cohort
+    "weight": 1, // Weight determines relative chance of getting assigned to this cohort
+    "prefs": {
+      "setValues": { // Prefs and values to set upon install
+        "pref1": "string1",
+        "pref2": true,
+        "pref3": 99
+      },
+      "resetDefaults": ["pref1"], // Prefs to reset to default values upon uninstsall
+      "resetValues": { // Prefs and values to set upon uninstall
+        "pref3": 100
+      }
+    }
   },
-  "cohort name 2": {
-    "pref1": "value",
-    "pref2": "value"
-  }
+
+  [...]
 }
+```
 
 Each cohort can define its own set of prefs. Different prefs can be set by different cohorts.
