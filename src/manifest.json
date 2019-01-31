@@ -1,0 +1,36 @@
+{
+  "manifest_version": 2,
+  "name": "Multipreffer",
+  "version": "1.0",
+  "description": "Flippa lotta prefs",
+  "background": {
+    "scripts": ["background.js"]
+  },
+  "applications": {
+    "gecko": {
+      "id": "multipreffer@shield.mozilla.org",
+      "strict_min_version": "64.0"
+    }
+  },
+
+  "permissions": [],
+
+  "experiment_apis": {
+    "study": {
+      "schema": "./privileged/study/schema.json",
+      "parent": {
+        "scopes": ["addon_parent"],
+        "script": "./privileged/study/api.js",
+        "paths": [["study"]]
+      }
+    },
+    "multipreffer": {
+      "schema": "./privileged/multipreffer/schema.json",
+      "parent": {
+        "scopes": ["addon_parent"],
+        "script": "./privileged/multipreffer/api.js",
+        "paths": [["multipreffer"]]
+      }
+    }
+  }
+}

@@ -1,0 +1,19 @@
+[
+  {
+    "namespace": "multipreffer",
+    "functions": [
+      {
+        "name": "studyReady",
+        "type": "function",
+        "async": true,
+        "parameters": [
+          {
+            "type": "object",
+            "name": "studyInfo",
+            "additionalProperties": true
+          }
+        ]
+      }
+    ]
+  }
+]
