@@ -33,28 +33,17 @@ this.FirefoxHooks = {
     AddonManager.addAddonListener(this);
   },
 
-  async setup() {
-    // Called the first time the study is setup - so only once.
-    const variationName = Preferences.get("extensions.multipreffer.test.variationName", this.studyInfo.variation.name);
-    const prefs = this.variations[variationName].prefs;
-    try {
-      for (const name of Object.keys(prefs.setValues)) {
-        if (Preferences.isSet(name)) {
-          // One of the prefs has a user-set value, ABORT!!!
-          // TODO: End the study/uninstall the addon?
-          this.ABORT = true;
-          return;
-        }
-      }
-      Preferences.set(prefs.setValues);
-    } catch (e) {
-      Cu.reportError(e);
-    }
+  get abortedPref() {
+    return `extensions.multipreffer.${gExtension.id}.aborted`;
   },
 
   async studyReady(studyInfo) {
     // Called every time the add-on is loaded.
     this.studyInfo = studyInfo;
+    if (Preferences.get(this.abortedPref)) {
+      return;
+    }
+
     try {
       const res = await fetch(gExtension.getURL("variations.json"));
       this.variations = await res.json();
@@ -63,12 +52,27 @@ this.FirefoxHooks = {
       return;
     }
 
-    await this.setup();
+    const variationName =
+      Preferences.get("extensions.multipreffer.test.variationName",
+                      this.studyInfo.variation.name);
+    const prefs = this.variations[variationName].prefs;
+    if (this.studyInfo.isFirstRun) {
+      for (const name of Object.keys(prefs.setValues)) {
+        if (Preferences.isSet(name)) {
+          // One of the prefs has a user-set value, ABORT!!!
+          // TODO: End the study/uninstall the addon?
+          Preferences.set(this.abortedPref, true);
+          return;
+        }
+      }
+    }
+    Preferences.set(prefs.setValues);
   },
 
   async cleanup() {
     // Called when the add-on is being removed for any reason.
-    if (this.ABORT) {
+    if (Preferences.get(this.abortedPref)) {
+      Preferences.reset(this.abortedPref);
       return;
     }
 

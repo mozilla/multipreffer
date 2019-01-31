@@ -79,6 +79,7 @@ describe("setup and teardown", function() {
   describe("Set some user prefs, ensure addon doesn't do anything", function() {
     const SETUP_DELAY = 500;
     let addonId;
+    let abortedPref;
 
     for (const variation in variations) {
       const prefs = variations[variation].prefs;
@@ -88,18 +89,25 @@ describe("setup and teardown", function() {
           await utils.setPreference(driver, "extensions.multipreffer.test.variationName", variation);
           await utils.setPreference(driver, allPrefs[0], "TEST VALUE!!");
           addonId = await utils.setupWebdriver.installAddon(driver);
+          abortedPref = `extensions.multipreffer.${addonId}.aborted`;
           await driver.sleep(SETUP_DELAY);
         });
 
         it("has the correct prefs after install", async () => {
+          // Take the first of the target prefs and set it to some value
+          // before installing the addon.
           const prefsToCheck = {};
           prefsToCheck[allPrefs[0]] = "TEST VALUE!!";
+          // The addon should set this pref to indicate that it aborted.
+          allPrefs.push(abortedPref);
+          prefsToCheck[abortedPref] = true;
           await checkPrefs(driver, allPrefs, prefsToCheck);
         });
 
         it("has the correct prefs after uninstall", async () => {
           const prefsToCheck = {};
           prefsToCheck[allPrefs[0]] = "TEST VALUE!!";
+          allPrefs.push(abortedPref);
           await utils.setupWebdriver.uninstallAddon(driver, addonId);
           await checkPrefs(driver, allPrefs, prefsToCheck);
         });
