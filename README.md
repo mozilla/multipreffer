@@ -1,8 +1,10 @@
 # Multipreffer
 
-Allows defining a set of prefs per SHIELD cohort, and sets them at install and cleans them up upon uninstall.
-User-modifications to prefs are respected. If any of the prefs to be touched have user-set values, the entire set is ignored.
-At uninstall, any individual prefs whose values have been user-changed since install are left alone.
+- Allows defining a set of prefs per SHIELD cohort, and sets them at install and cleans them up upon uninstall.
+- User-modifications to prefs are respected:
+  - If any of the prefs to be touched have user-set values, the entire set is ignored.
+  - At uninstall, any individual prefs whose values have been user-changed since install are left alone.
+- The pref changes are resilient to changes in default values after an update: i.e. the requested values are kept after update, and the new defaults are respected during cleanup at uninstall-time.
 
 The prefs to be set should be defined in src/variations.json, following this scheme:
 
