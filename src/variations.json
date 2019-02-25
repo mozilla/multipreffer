@@ -18,9 +18,9 @@
     "weight": 1,
     "prefs": {
       "setValues": {
-        "pref1": "string2",
-        "pref2": false,
-        "pref3": 999
+        "pref1": false,
+        "pref2": 999,
+        "pref3": "string2"
       },
       "resetDefaults": ["pref1"],
       "resetValues": {
@@ -33,9 +33,9 @@
     "weight": 1,
     "prefs": {
       "setValues": {
-        "pref1": "string3",
-        "pref2": true,
-        "pref3": -100
+        "pref1": -100,
+        "pref2": "string3",
+        "pref3": true
       },
       "resetDefaults": ["pref3"],
       "resetValues": {

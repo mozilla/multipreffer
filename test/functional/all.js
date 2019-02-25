@@ -83,6 +83,17 @@ describe("setup and teardown", function() {
     for (const variation in variations) {
       const prefs = variations[variation].prefs;
       const allPrefs = Object.keys(prefs.setValues);
+
+      let val = allPrefs[0];
+      let testVal;
+      if (typeof val === "number") {
+        testVal = 999;
+      } else if (typeof val === "string") {
+        testVal = "Test Value!";
+      } else if (typeof val === "boolean") {
+        testVal = true;
+      }
+
       describe(`sets the correct prefs for variation ${variation}`, () => {
         before(async () => {
           await utils.setPreference(driver, "extensions.multipreffer.test.variationName", variation);
@@ -95,7 +106,7 @@ describe("setup and teardown", function() {
         });
 
         it("has the correct prefs after uninstall", async () => {
-          await utils.setPreference(driver, allPrefs[0], "TEST VALUE!!");
+          await utils.setPreference(driver, allPrefs[0], testVal);
           await utils.setupWebdriver.uninstallAddon(driver, addonId);
           const prefsToCheck = Object.assign({}, prefs.setValues);
           for (const pref of prefs.resetDefaults) {
@@ -104,7 +115,7 @@ describe("setup and teardown", function() {
           for (const pref in prefs.resetValues) {
             prefsToCheck[pref] = prefs.resetValues[pref];
           }
-          prefsToCheck[allPrefs[0]] = "TEST VALUE!!";
+          prefsToCheck[allPrefs[0]] = testVal;
           await checkPrefs(driver, allPrefs, prefsToCheck);
           for (const pref in prefsToCheck) {
             await utils.clearPreference(driver, pref);
@@ -118,7 +129,7 @@ describe("setup and teardown", function() {
     }
   });
 
-  describe("Set some user prefs, ensure addon doesn't do anything", function() {
+  describe("Set up some prefs with unexpected values, ensure addon doesn't do anything", function() {
     const SETUP_DELAY = 500;
     let addonId;
     let abortedPref;
@@ -126,10 +137,13 @@ describe("setup and teardown", function() {
     for (const variation in variations) {
       const prefs = variations[variation].prefs;
       const allPrefs = Object.keys(prefs.setValues);
+
+      const testVal = "Test Value!";
+
       describe(`no prefs should be set for ${variation}`, () => {
         before(async () => {
           await utils.setPreference(driver, "extensions.multipreffer.test.variationName", variation);
-          await utils.setPreference(driver, allPrefs[0], "TEST VALUE!!");
+          await utils.setPreference(driver, allPrefs[0], testVal);
           addonId = await utils.setupWebdriver.installAddon(driver);
           abortedPref = `extensions.multipreffer.${addonId}.aborted`;
           await driver.sleep(SETUP_DELAY);
@@ -139,7 +153,7 @@ describe("setup and teardown", function() {
           // Take the first of the target prefs and set it to some value
           // before installing the addon.
           const prefsToCheck = {};
-          prefsToCheck[allPrefs[0]] = "TEST VALUE!!";
+          prefsToCheck[allPrefs[0]] = testVal;
           // The addon should set this pref to indicate that it aborted.
           allPrefs.push(abortedPref);
           prefsToCheck[abortedPref] = true;
@@ -148,7 +162,7 @@ describe("setup and teardown", function() {
 
         it("has the correct prefs after uninstall", async () => {
           const prefsToCheck = {};
-          prefsToCheck[allPrefs[0]] = "TEST VALUE!!";
+          prefsToCheck[allPrefs[0]] = testVal;
           allPrefs.push(abortedPref);
           await utils.setupWebdriver.uninstallAddon(driver, addonId);
           await checkPrefs(driver, allPrefs, prefsToCheck);
