@@ -58,7 +58,7 @@ this.FirefoxHooks = {
     const prefs = this.variations[variationName].prefs;
     if (this.studyInfo.isFirstRun) {
       for (const name of Object.keys(prefs.setValues)) {
-        if (Preferences.isSet(name)) {
+        if (!prefs.expectNonDefaults.includes(name) && Preferences.isSet(name)) {
           // One of the prefs has a user-set value, ABORT!!!
           // TODO: End the study/uninstall the addon?
           Preferences.set(this.abortedPref, true);
