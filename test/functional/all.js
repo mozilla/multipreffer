@@ -21,20 +21,9 @@ async function checkPrefs(driver, allPrefs, prefs) {
 
 describe("setup and teardown", function() {
   // This gives Firefox time to start, and us a bit longer during some of the tests.
-  this.timeout(15000);
+  this.timeout(45000);
 
   let driver;
-
-  // runs ONCE
-  before(async () => {
-    driver = await utils.setupWebdriver.promiseSetupDriver(
-      utils.FIREFOX_PREFERENCES,
-    );
-  });
-
-  after(() => {
-    driver.quit();
-  });
 
   describe("sets up the correct prefs, depending on the variation", function() {
     const SETUP_DELAY = 500;
@@ -45,8 +34,11 @@ describe("setup and teardown", function() {
       const allPrefs = Object.keys(prefs.setValues);
       describe(`sets the correct prefs for variation ${variation}`, () => {
         before(async () => {
+          driver = await utils.setupWebdriver.promiseSetupDriver(
+            utils.FIREFOX_PREFERENCES,
+          );
           await utils.setPreference(driver, "extensions.multipreffer.test.variationName", variation);
-          addonId = await utils.setupWebdriver.installAddon(driver);
+          addonId = await utils.installAddon(driver);
           await driver.sleep(SETUP_DELAY);
         });
 
@@ -54,8 +46,15 @@ describe("setup and teardown", function() {
           await checkPrefs(driver, allPrefs, prefs.setValues);
         });
 
+        it("has the correct prefs after restart", async () => {
+          driver = await utils.restartDriverWithSameProfile(driver);
+          await driver.sleep(SETUP_DELAY);
+          await checkPrefs(driver, allPrefs, prefs.setValues);
+        });
+
         it("has the correct prefs after uninstall", async () => {
-          await utils.setupWebdriver.uninstallAddon(driver, addonId);
+          await utils.uninstallAddon(driver, addonId);
+          await driver.sleep(SETUP_DELAY);
           const prefsToCheck = Object.assign({}, prefs.setValues);
           for (const pref of prefs.resetDefaults) {
             prefsToCheck[pref] = undefined;
@@ -64,13 +63,10 @@ describe("setup and teardown", function() {
             prefsToCheck[pref] = prefs.resetValues[pref];
           }
           await checkPrefs(driver, allPrefs, prefsToCheck);
-          for (const pref in prefsToCheck) {
-            await utils.clearPreference(driver, pref);
-          }
         });
 
         after(async () => {
-          await utils.clearPreference(driver, "extensions.multipreffer.test.variationName");
+          await driver.quit();
         });
       });
     }
@@ -85,7 +81,7 @@ describe("setup and teardown", function() {
       const allPrefs = Object.keys(prefs.setValues);
 
       const testPref = allPrefs[0];
-      let val = prefs.setValues[testPref];
+      const val = prefs.setValues[testPref];
       let testVal;
       if (typeof val === "number") {
         testVal = 999;
@@ -97,8 +93,11 @@ describe("setup and teardown", function() {
 
       describe(`sets the correct prefs for variation ${variation}`, () => {
         before(async () => {
+          driver = await utils.setupWebdriver.promiseSetupDriver(
+            utils.FIREFOX_PREFERENCES,
+          );
           await utils.setPreference(driver, "extensions.multipreffer.test.variationName", variation);
-          addonId = await utils.setupWebdriver.installAddon(driver);
+          addonId = await utils.installAddon(driver);
           await driver.sleep(SETUP_DELAY);
         });
 
@@ -106,9 +105,15 @@ describe("setup and teardown", function() {
           await checkPrefs(driver, allPrefs, prefs.setValues);
         });
 
+        it("has the correct prefs after restart", async () => {
+          driver = await utils.restartDriverWithSameProfile(driver);
+          await driver.sleep(SETUP_DELAY);
+          await checkPrefs(driver, allPrefs, prefs.setValues);
+        });
+
         it("has the correct prefs after uninstall", async () => {
           await utils.setPreference(driver, allPrefs[0], testVal);
-          await utils.setupWebdriver.uninstallAddon(driver, addonId);
+          await utils.uninstallAddon(driver, addonId);
           const prefsToCheck = Object.assign({}, prefs.setValues);
           for (const pref of prefs.resetDefaults) {
             prefsToCheck[pref] = undefined;
@@ -118,13 +123,10 @@ describe("setup and teardown", function() {
           }
           prefsToCheck[testPref] = testVal;
           await checkPrefs(driver, allPrefs, prefsToCheck);
-          for (const pref in prefsToCheck) {
-            await utils.clearPreference(driver, pref);
-          }
         });
 
         after(async () => {
-          await utils.clearPreference(driver, "extensions.multipreffer.test.variationName");
+          await driver.quit();
         });
       });
     }
@@ -144,9 +146,12 @@ describe("setup and teardown", function() {
 
       describe(`no prefs should be set for ${variation}`, () => {
         before(async () => {
+          driver = await utils.setupWebdriver.promiseSetupDriver(
+            utils.FIREFOX_PREFERENCES,
+          );
           await utils.setPreference(driver, "extensions.multipreffer.test.variationName", variation);
           await utils.setPreference(driver, testPref, testVal);
-          addonId = await utils.setupWebdriver.installAddon(driver);
+          addonId = await utils.installAddon(driver);
           abortedPref = `extensions.multipreffer.${addonId}.aborted`;
           await driver.sleep(SETUP_DELAY);
         });
@@ -162,17 +167,26 @@ describe("setup and teardown", function() {
           await checkPrefs(driver, allPrefs, prefsToCheck);
         });
 
+        it("has the correct prefs after restart", async () => {
+          driver = await utils.restartDriverWithSameProfile(driver);
+          await driver.sleep(SETUP_DELAY);
+          // Take the first of the target prefs and set it to some value
+          // before installing the addon.
+          const prefsToCheck = {};
+          prefsToCheck[testPref] = testVal;
+          prefsToCheck[abortedPref] = true;
+          await checkPrefs(driver, allPrefs, prefsToCheck);
+        });
+
         it("has the correct prefs after uninstall", async () => {
           const prefsToCheck = {};
           prefsToCheck[testPref] = testVal;
-          allPrefs.push(abortedPref);
-          await utils.setupWebdriver.uninstallAddon(driver, addonId);
+          await utils.uninstallAddon(driver, addonId);
           await checkPrefs(driver, allPrefs, prefsToCheck);
         });
 
         after(async () => {
-          await utils.clearPreference(driver, testPref);
-          await utils.clearPreference(driver, "extensions.multipreffer.test.variationName");
+          await driver.quit();
         });
       });
     }
@@ -181,7 +195,6 @@ describe("setup and teardown", function() {
   describe("Ensure expectNonDefaults works", function() {
     const SETUP_DELAY = 500;
     let addonId;
-    let abortedPref;
 
     for (const variation in variations) {
       const prefs = variations[variation].prefs;
@@ -191,7 +204,7 @@ describe("setup and teardown", function() {
       const allPrefs = Object.keys(prefs.setValues);
 
       const testPref = prefs.expectNonDefaults[0];
-      let val = prefs.setValues[testPref];
+      const val = prefs.setValues[testPref];
       let testVal;
       if (typeof val === "number") {
         testVal = 999;
@@ -203,10 +216,12 @@ describe("setup and teardown", function() {
 
       describe(`sets the correct prefs for ${variation}`, () => {
         before(async () => {
+          driver = await utils.setupWebdriver.promiseSetupDriver(
+            utils.FIREFOX_PREFERENCES,
+          );
           await utils.setPreference(driver, "extensions.multipreffer.test.variationName", variation);
           await utils.setPreference(driver, testPref, testVal);
-          addonId = await utils.setupWebdriver.installAddon(driver);
-          abortedPref = `extensions.multipreffer.${addonId}.aborted`;
+          addonId = await utils.installAddon(driver);
           await driver.sleep(SETUP_DELAY);
         });
 
@@ -214,8 +229,14 @@ describe("setup and teardown", function() {
           await checkPrefs(driver, allPrefs, prefs.setValues);
         });
 
+        it("has the correct prefs after restart", async () => {
+          driver = await utils.restartDriverWithSameProfile(driver);
+          await driver.sleep(SETUP_DELAY);
+          await checkPrefs(driver, allPrefs, prefs.setValues);
+        });
+
         it("has the correct prefs after uninstall", async () => {
-          await utils.setupWebdriver.uninstallAddon(driver, addonId);
+          await utils.uninstallAddon(driver, addonId);
           const prefsToCheck = Object.assign({}, prefs.setValues);
           for (const pref of prefs.resetDefaults) {
             prefsToCheck[pref] = undefined;
@@ -224,13 +245,10 @@ describe("setup and teardown", function() {
             prefsToCheck[pref] = prefs.resetValues[pref];
           }
           await checkPrefs(driver, allPrefs, prefsToCheck);
-          for (const pref in prefsToCheck) {
-            await utils.clearPreference(driver, pref);
-          }
         });
 
         after(async () => {
-          await utils.clearPreference(driver, "extensions.multipreffer.test.variationName");
+          await driver.quit();
         });
       });
     }
