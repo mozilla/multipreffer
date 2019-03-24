@@ -100,7 +100,6 @@ async function removeCurrentTab(driver) {
 async function restartDriverWithSameProfile(driver) {
   const profile = (await driver.getCapabilities()).get("moz:profile");
 
-  // TODO glind, allow config to re-use profile
   const options = new firefox.Options();
   options.setProfile(profile);
 
