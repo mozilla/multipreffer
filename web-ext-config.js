@@ -13,7 +13,7 @@ const defaultConfig = {
     firefox: process.env.FIREFOX_BINARY || "firefox",
     browserConsole: false,
     startUrl: ["about:debugging"],
-    pref: [],
+    pref: ["extensions.multipreffer.test.variationName=Experiment"],
   },
 };
 

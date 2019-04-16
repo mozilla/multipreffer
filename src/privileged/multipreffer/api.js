@@ -2,22 +2,17 @@
 
 Cu.importGlobalProperties(["fetch"]);
 
-ChromeUtils.defineModuleGetter(this, "Services",
-  "resource://gre/modules/Services.jsm");
-ChromeUtils.defineModuleGetter(this, "ExtensionCommon",
-  "resource://gre/modules/ExtensionCommon.jsm");
 ChromeUtils.defineModuleGetter(this, "AddonManager",
   "resource://gre/modules/AddonManager.jsm");
 ChromeUtils.defineModuleGetter(this, "Preferences",
   "resource://gre/modules/Preferences.jsm");
+const DefaultPreferences = new Preferences({ defaultBranch: true });
 
 let gExtension;
 
 this.multipreffer = class extends ExtensionAPI {
   getAPI(context) {
     gExtension = context.extension;
-    FirefoxHooks.init();
-
     return {
       multipreffer: {
         async studyReady(studyInfo) {
@@ -29,21 +24,13 @@ this.multipreffer = class extends ExtensionAPI {
 };
 
 this.FirefoxHooks = {
-  init() {
-    AddonManager.addAddonListener(this);
-  },
-
-  get abortedPref() {
-    return `extensions.multipreffer.${gExtension.id}.aborted`;
-  },
-
+  // Default branch prefs can't be "reset" since they ARE
+  // (supposed to be) the defaults. So in order to reset
+  // them at cleanup, we cache the values of our target
+  // prefs in this object before modifying them.
+  _oldDefaultValues: {},
   async studyReady(studyInfo) {
     // Called every time the add-on is loaded.
-    this.studyInfo = studyInfo;
-    if (Preferences.get(this.abortedPref)) {
-      return;
-    }
-
     try {
       const res = await fetch(gExtension.getURL("variations.json"));
       this.variations = await res.json();
@@ -53,56 +40,41 @@ this.FirefoxHooks = {
     }
 
     const variationName =
-      Preferences.get("extensions.multipreffer.test.variationName",
-                      this.studyInfo.variation.name);
+      Preferences.get(
+        "extensions.multipreffer.test.variationName", studyInfo.variation.name);
+
     const prefs = this.variations[variationName].prefs;
-    if (this.studyInfo.isFirstRun) {
-      for (const name of Object.keys(prefs.setValues)) {
-        if (!prefs.expectNonDefaults.includes(name) && Preferences.isSet(name)) {
-          // One of the prefs has a user-set value, ABORT!!!
-          // TODO: End the study/uninstall the addon?
-          Preferences.set(this.abortedPref, true);
-          return;
+
+    for (const pref of Object.keys(prefs)) {
+      let val = Preferences.get(pref);
+      if (val === undefined) {
+        // If undefined, save it as a false-y value.
+        // This is the best we can do to reset it at cleanup
+        // since there's no way to clear the value of a pref
+        // on the default branch.
+        switch (typeof prefs[pref]) {
+          case "string":
+            val = "";
+            break;
+          case "boolean":
+            val = false;
+            break;
+          case "number":
+            val = 0;
+            break;
         }
       }
+      this._oldDefaultValues[pref] = val;
     }
-    Preferences.set(prefs.setValues);
+
+    DefaultPreferences.set(prefs);
+
+    AddonManager.addAddonListener(this);
   },
 
-  async cleanup() {
+  cleanup() {
     // Called when the add-on is being removed for any reason.
-    if (Preferences.get(this.abortedPref)) {
-      Preferences.reset(this.abortedPref);
-      return;
-    }
-
-    try {
-      const variationName = Preferences.get("extensions.multipreffer.test.variationName", this.studyInfo.variation.name);
-      const prefs = this.variations[variationName].prefs;
-      const setValues = prefs.setValues;
-
-      // Handle the prefs that need to be reset to default.
-      const resetDefaults = [];
-      for (const pref of prefs.resetDefaults) {
-        if (Preferences.get(pref) === setValues[pref]) {
-          // Pref value hasn't changed from what we set. Include it.
-          resetDefaults.push(pref);
-        }
-      }
-      Preferences.reset(resetDefaults);
-
-      // Handle the prefs that need to be set to a specified value.
-      const resetValues = prefs.resetValues;
-      for (const [name, value] of Object.entries(setValues)) {
-        if (Preferences.get(name) !== value) {
-          // Pref was modified. Make sure it's not in the resetValues list.
-          delete resetValues[name];
-        }
-      }
-      Preferences.set(resetValues);
-    } catch (e) {
-      Cu.reportError(e);
-    }
+    DefaultPreferences.set(this._oldDefaultValues);
   },
 
   onUninstalling(addon) {
@@ -117,7 +89,8 @@ this.FirefoxHooks = {
     if (addon.id !== gExtension.id) {
       return;
     }
-    await this.cleanup();
+
+    this.cleanup();
     AddonManager.removeAddonListener(this);
     // This is needed even for onUninstalling, because it nukes the addon
     // from UI. If we don't do this, the user has a chance to "undo".
