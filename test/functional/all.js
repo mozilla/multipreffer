@@ -41,6 +41,10 @@ describe("setup and teardown", function() {
           await utils.setPreference(driver, "extensions.multipreffer.test.variationName", variation);
           allPrefs = {};
           for (const pref of Object.keys(prefs)) {
+            // If the pref doesn't exist, utils.getPreference will return null.
+            // I think this is because the result of `await driver.executeScript`
+            // converts an explicit return value of `undefined` to null.
+            // This information is important later in our post-uninstall test.
             allPrefs[pref] = await utils.getPreference(driver, pref);
           }
           addonId = await utils.installAddon(driver);
@@ -60,11 +64,26 @@ describe("setup and teardown", function() {
         it("has the correct prefs after uninstall", async () => {
           await utils.uninstallAddon(driver, addonId);
           await driver.sleep(SETUP_DELAY);
-          const prefsToCheck = Object.assign({}, prefs);
-          for (const pref of Object.keys(prefs)) {
-            prefsToCheck[pref] = undefined;
+          // It's not possible to remove default branch prefs from
+          // existence at runtime after they have a value, so
+          // multipreffer does the best it can at cleanup and sets
+          // an empty string value. So we need to expect this.
+          for (const pref of Object.keys(allPrefs)) {
+            if (allPrefs[pref] === null) {
+              switch (typeof prefs[pref]) {
+                case "string":
+                  allPrefs[pref] = "";
+                  break;
+                case "boolean":
+                  allPrefs[pref] = false;
+                  break;
+                case "number":
+                  allPrefs[pref] = 0;
+                  break;
+              }
+            }
           }
-          await checkPrefs(driver, allPrefs, prefsToCheck);
+          await checkPrefs(driver, allPrefs, {});
         });
 
         after(async () => {

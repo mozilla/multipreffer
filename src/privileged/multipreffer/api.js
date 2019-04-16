@@ -2,16 +2,11 @@
 
 Cu.importGlobalProperties(["fetch"]);
 
-ChromeUtils.defineModuleGetter(this, "Services",
-  "resource://gre/modules/Services.jsm");
-ChromeUtils.defineModuleGetter(this, "ExtensionCommon",
-  "resource://gre/modules/ExtensionCommon.jsm");
 ChromeUtils.defineModuleGetter(this, "AddonManager",
   "resource://gre/modules/AddonManager.jsm");
 ChromeUtils.defineModuleGetter(this, "Preferences",
   "resource://gre/modules/Preferences.jsm");
 const DefaultPreferences = new Preferences({ defaultBranch: true });
-
 
 let gExtension;
 
@@ -29,6 +24,10 @@ this.multipreffer = class extends ExtensionAPI {
 };
 
 this.FirefoxHooks = {
+  // Default branch prefs can't be "reset" since they ARE
+  // (supposed to be) the defaults. So in order to reset
+  // them at cleanup, we cache the values of our target
+  // prefs in this object before modifying them.
   _oldDefaultValues: {},
   async studyReady(studyInfo) {
     // Called every time the add-on is loaded.
@@ -43,21 +42,33 @@ this.FirefoxHooks = {
     const variationName =
       Preferences.get(
         "extensions.multipreffer.test.variationName", studyInfo.variation.name);
+
     const prefs = this.variations[variationName].prefs;
 
     for (const pref of Object.keys(prefs)) {
       let val = Preferences.get(pref);
       if (val === undefined) {
-        // If undefined, save it as an empty string.
+        // If undefined, save it as a false-y value.
         // This is the best we can do to reset it at cleanup
         // since there's no way to clear the value of a pref
         // on the default branch.
-        val = "";
+        switch (typeof prefs[pref]) {
+          case "string":
+            val = "";
+            break;
+          case "boolean":
+            val = false;
+            break;
+          case "number":
+            val = 0;
+            break;
+        }
       }
       this._oldDefaultValues[pref] = val;
     }
 
     DefaultPreferences.set(prefs);
+
     AddonManager.addAddonListener(this);
   },
 
@@ -78,6 +89,7 @@ this.FirefoxHooks = {
     if (addon.id !== gExtension.id) {
       return;
     }
+
     this.cleanup();
     AddonManager.removeAddonListener(this);
     // This is needed even for onUninstalling, because it nukes the addon
