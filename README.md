@@ -19,3 +19,16 @@ The prefs to be set should be defined in src/variations.json, following this sch
   [...]
 }
 ```
+
+# [WIP] Process to develop a multipreffer-based study
+
+TODO: streamline, automate.
+
+1. Make a copy of the repo
+2. Update metadata in manifest.json and package.json
+3. Update abort and branch name prefs
+4. npm install
+5. npm run build
+6. npm run test
+
+If the tests pass, should be good to go! Build is in dist/ - upload to the study bug for signing.
