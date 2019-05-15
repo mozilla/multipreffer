@@ -77,11 +77,26 @@ this.FirefoxHooks = {
     DefaultPreferences.set(this._oldDefaultValues);
   },
 
-  async onUninstalling(addon) {
+  onUninstalling(addon) {
+    this.handleDisableOrUninstall(addon, { uninstall: true });
+  },
+
+  onDisabled(addon) {
+    this.handleDisableOrUninstall(addon, { uninstall: false });
+  },
+
+  async handleDisableOrUninstall(addon, { uninstall=false }={}) {
     if (addon.id !== gExtension.id) {
       return;
     }
+
     this.cleanup();
     AddonManager.removeAddonListener(this);
+
+    // This is needed even for onUninstalling, because it nukes the addon
+    // from UI. If we don't do this, the user has a chance to "undo".
+    if (uninstall) {
+      addon.uninstall();
+    }
   },
 };
